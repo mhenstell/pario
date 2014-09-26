@@ -1,0 +1,89 @@
+/** \file
+ * Try to play nice with the Beagle Bone device tree.
+ *
+ * But it really sucks.  This is a waste of time; we can just use
+ * a shell script to poke the gpio export and config files since this
+ * is so borked.
+ */
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "ti,beaglebone-black";
+
+    /* identification */
+    part-number = "BB-TEST";
+    version = "00A0";
+    dtbo = "cape-test-00A0.dtbo";
+
+    /* state the resources this cape uses or prepare to get winged! */
+    exclusive-use =
+        /* IO pins for the PRU to use */
+	"P8.11", "P8.12",
+	"P8.27", "P8.28",
+	"P8.29", "P8.39",
+	"P8.40", "P8.41",
+	"P8.42", "P8.43", 
+	"P8.44", "P8.45",
+	"P8.46",
+
+	"P9.25", "P9.27",
+	"P9.28", "P9.29",
+	"P9.30", "P9.31",
+
+	// And we need the PRU
+        "pruss"; 
+
+    fragment@0 {
+        target = <&am33xx_pinmux>;
+        __overlay__ {
+           mygpio: pinmux_mygpio {
+                pinctrl-single,pins = <
+            0x034 0x6 // P8.11 gpio1.13
+			0x030 0x6 // P8.12 gpio1.12
+			0x0e0 0x5 // P8.27 gpio2.22
+			0x0e8 0x5 // P8.28 gpio2.24
+			0x0e4 0x5 // P8.29 gpio2.23
+			0x0b8 0x5 // P8.39 gpio2.12
+			0x0bc 0x5 // P8.40 gpio2.13
+			0x0b0 0x5 // P8.41 gpio2.10
+			0x0b4 0x5 // P8.42 gpio2.11
+			0x0a8 0x5 // P8.43 gpio2.8
+			0x0ac 0x5 // P8.44 gpio2.9
+			0x0a0 0x5 // P8.45 gpio2.6
+			0x0a4 0x5 // P8.46 gpio2.7
+
+			0x1ac 0x5 // P9.25 gpio3.21
+			0x19c 0x5 // P9.28 gpio0.17
+			0x1a4 0x5 // P9.27 gpio3.19
+			0x194 0x5 // P9.29 gpio3.15
+			0x190 0x5 // P9.31 gpio3.14
+			0x198 0x5 // P9.30 gpio3.16
+			
+                >;
+            };
+        };
+    };
+
+
+ fragment@1 {
+    target = <&ocp>;
+    __overlay__ {
+      ws281x_pinmux_helper: helper {
+        compatible = "bone-pinmux-helper";
+        pinctrl-names = "default";
+        pinctrl-0 = <&mygpio>;
+        status = "okay";
+      };
+    };
+  };
+
+
+    fragment@1{
+        target = <&pruss>;
+        __overlay__{
+            status = "okay";
+            };            
+        };
+ 
+};

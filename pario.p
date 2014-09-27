@@ -37,7 +37,7 @@ START:
 // The first 8 must agree with the struct pario_cmd_t in pario.h
 #define data_addr	r0
 #define count		r1
-#define gpio0_mask	r2
+#define pru0r30_mask	r2
 #define gpio1_mask	r3
 #define gpio2_mask	r4
 #define gpio3_mask	r5
@@ -55,10 +55,10 @@ START:
 #define set_out		r19 // must be clr_out+1
 #define delay_iter	r20
 
-	MOV gpio0_base, GPIO0
-	MOV gpio1_base, GPIO1
-	MOV gpio2_base, GPIO2
-	MOV gpio3_base, GPIO3
+//	MOV gpio0_base, GPIO0
+//	MOV gpio1_base, GPIO1
+//	MOV gpio2_base, GPIO2
+//	MOV gpio3_base, GPIO3
 
 RESET:
 	MOV data_addr, 0
@@ -85,8 +85,8 @@ OUTPUT_LOOP:
 		// bits selected in each of the four GPIO banks.
 		// Since the SBBO takes 50ns or so, it is important
 		// to skip
-		QBEQ skip_gpio0, gpio0_mask, 0
-		AND set_out, gpio0_data, gpio0_mask
+//		QBEQ skip_gpio0, gpio0_mask, 0
+//		AND set_out, gpio0_data, gpio0_mask
 		SBBO set_out, gpio0_base, GPIO_DATAOUT, 4
 skip_gpio0:
 

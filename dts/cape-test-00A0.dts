@@ -79,7 +79,7 @@
   };
 
 
-    fragment@1{
+    fragment@2{
         target = <&pruss>;
         __overlay__{
             status = "okay";

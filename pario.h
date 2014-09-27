@@ -23,7 +23,7 @@ typedef struct
 {
 	uintptr_t phys_addr;
 	uint32_t num_bits; // length in bytes is num_bits*4*4
-	uint32_t gpio0_mask;
+	uint32_t pru0r30_mask;
 	uint32_t gpio1_mask;
 	uint32_t gpio2_mask;
 	uint32_t gpio3_mask;

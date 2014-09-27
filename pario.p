@@ -47,7 +47,7 @@ START:
 #define gpio1_base	r11
 #define gpio2_base	r12
 #define gpio3_base	r13
-#define gpio0_data	r14
+#define pru0r30_data	r14
 #define gpio1_data	r15
 #define gpio2_data	r16
 #define gpio3_data	r17
@@ -79,43 +79,17 @@ OUTPUT_LOOP:
 		QBEQ RESET, count, #0
 
 		// read four gpio outputs worth of data
-		LBBO gpio0_data, data_addr, 0, 4*4
+		LBBO pru0r30_data, data_addr, 0, 4
 
 		// and write them to their outputs if there are any
 		// bits selected in each of the four GPIO banks.
 		// Since the SBBO takes 50ns or so, it is important
 		// to skip
 //		QBEQ skip_gpio0, gpio0_mask, 0
-//		AND set_out, gpio0_data, gpio0_mask
-		SBBO set_out, gpio0_base, GPIO_DATAOUT, 4
-skip_gpio0:
+		AND set_out, pru0r30_data, pru0r30_mask
+//		SBBO set_out, gpio0_base, GPIO_DATAOUT, 4
+		MOV r30, set_out
 
-		QBEQ skip_gpio2, gpio2_mask, 0
-		AND set_out, gpio2_data, gpio2_mask
-		SBBO set_out, gpio2_base, GPIO_DATAOUT, 4
-skip_gpio2:
-
-		QBEQ skip_gpio3, gpio3_mask, 0
-		AND set_out, gpio3_data, gpio3_mask
-		SBBO set_out, gpio3_base, GPIO_DATAOUT, 4
-
-skip_gpio3:
-		QBEQ skip_gpio1, gpio1_mask, 0
-		AND set_out, gpio1_data, gpio1_mask
-		OR set_out, set_out, clock_mask // force the clock high
-		SBBO set_out, gpio1_base, GPIO_DATAOUT, 4
-
-skip_gpio1:
-		// and pull the clock down, if there is one
-		QBEQ skip_clock, clock_mask, 0
-		SBBO clock_mask, gpio1_base, GPIO_CLRDATAOUT, 4
-
-skip_clock:
-
-		// delay if the caller has requested it
-		// each count is 10 ns extra.
-		MOV delay_iter, delay_count
-		QBEQ delay_done, delay_iter, 0
 delay_loop:
 		SUB delay_iter, delay_iter, 1
 		QBNE delay_loop, delay_iter, 0

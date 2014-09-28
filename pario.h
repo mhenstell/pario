@@ -24,10 +24,6 @@ typedef struct
 	uintptr_t phys_addr;
 	uint32_t num_bits; // length in bytes is num_bits*4*4
 	uint32_t pru0r30_mask;
-	uint32_t gpio1_mask;
-	uint32_t gpio2_mask;
-	uint32_t gpio3_mask;
-	uint32_t clock_mask; // clock in gpio1, would be best in r30
 	uint32_t delay_time; // in 10 ns increments
 } pario_cmd_t;
 

@@ -9,33 +9,18 @@ int main(void)
 	pario_t * const p = pario_init(0);
 	uint32_t * const bits = (uint32_t*) p->virt;
 
-	// p->cmd->clock_mask = 1 << 12; // gpio44
-	//p->cmd->clock_mask = 0;
-	// p->cmd->gpio1_mask &= ~p->cmd->clock_mask;
-	//p->cmd->gpio0_mask = 0;
-	//p->cmd->gpio2_mask = 0;
-	//p->cmd->gpio3_mask = 0;
+	p->cmd->delay_time = 0;
 
 	printf("virt: %p\n", (const void*) p->virt);
 	printf("phys: %p\n", (const void*) p->phys);
 	printf("cmd:  %p\n", (const void*) p->cmd);
 	printf("pru0r30 mask0:  %08x\n", p->cmd->pru0r30_mask);
-	printf("mask1:  %08x\n", p->cmd->gpio1_mask);
-	printf("mask2:  %08x\n", p->cmd->gpio2_mask);
-	printf("mask3:  %08x\n", p->cmd->gpio3_mask);
 
 	// generate a square wave on all ports
 	for (int i = 0 ; i < 256 ; i += 2)
 	{
-		bits[i*4 + 0] = 0;
-		bits[i*4 + 1] = 0;
-		bits[i*4 + 2] = 0;
-		bits[i*4 + 3] = 0;
-
-		bits[(i+1)*4 + 0] = 0xFFFFFFFF & p->cmd->pru0r30_mask;
-		bits[(i+1)*4 + 1] = 0xFFFFFFFF & p->cmd->gpio1_mask;
-		bits[(i+1)*4 + 2] = 0xFFFFFFFF & p->cmd->gpio2_mask;
-		bits[(i+1)*4 + 3] = 0xFFFFFFFF & p->cmd->gpio3_mask;
+		bits[i] = 0xFFFFFFFF & ~(1 << 15);
+		bits[i+1] = 0x00000000;
 	}
 
 	p->cmd->num_bits = 256;

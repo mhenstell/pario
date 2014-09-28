@@ -33,72 +33,62 @@ START:
     MOV		r1, CTPPR_1
     ST32	r0, r1
 
+
 // register map
 // The first 8 must agree with the struct pario_cmd_t in pario.h
 #define data_addr	r0
 #define count		r1
 #define pru0r30_mask	r2
-#define gpio1_mask	r3
-#define gpio2_mask	r4
-#define gpio3_mask	r5
-#define clock_mask	r6
-#define delay_count	r7
-#define gpio0_base	r10
-#define gpio1_base	r11
-#define gpio2_base	r12
-#define gpio3_base	r13
-#define pru0r30_data	r14
-#define gpio1_data	r15
-#define gpio2_data	r16
-#define gpio3_data	r17
-#define clr_out		r18
-#define set_out		r19 // must be clr_out+1
+#define delay_count	r3
+#define pru0r30_data0	r10
+#define pru0r30_data1	r11
+#define pru0r30_data2	r12
+#define pru0r30_data3	r13
+#define pru0r30_data4	r14
+#define pru0r30_data5	r15
+#define pru0r30_data6	r16
+#define pru0r30_data7	r17
+
 #define delay_iter	r20
 
-//	MOV gpio0_base, GPIO0
-//	MOV gpio1_base, GPIO1
-//	MOV gpio2_base, GPIO2
-//	MOV gpio3_base, GPIO3
 
 RESET:
 	MOV data_addr, 0
 	SBCO data_addr, CONST_PRUDRAM, 0, 4
 
 READ_LOOP:
-        // Load the eight word command structure from the PRU DRAM, which is
-	// mapped into the user space.
-        LBCO      data_addr, CONST_PRUDRAM, 0, 8*4
-
-        // Wait for a non-zero command
-        QBEQ READ_LOOP, data_addr, #0
-
-        // Command of 0xFF is the signal to exit
-        QBEQ EXIT, data_addr, #0xFF
+	LBCO data_addr, CONST_PRUDRAM, 0, 4*4
+	QBEQ READ_LOOP, data_addr, #0
+	QBEQ EXIT, data_addr, #0xFF
 
 OUTPUT_LOOP:
-		QBEQ RESET, count, #0
+	QBEQ RESET, count, #0
+	
+	MOV r30, 1<<15
+	LBBO pru0r30_data0, data_addr, 0, 4*8
+	MOV r30, 0<<15
+	
+	MOV r30, pru0r30_data0
+	MOV r30, pru0r30_data1
+	MOV r30, pru0r30_data2
+	MOV r30, pru0r30_data3
+	MOV r30, pru0r30_data4
+        MOV r30, pru0r30_data5
+        MOV r30, pru0r30_data6
+        MOV r30, pru0r30_data7
+	
 
-		// read four gpio outputs worth of data
-		LBBO pru0r30_data, data_addr, 0, 4
+	//MOV delay_iter, delay_count
+	//QBEQ delay_done, delay_iter, 0
 
-		// and write them to their outputs if there are any
-		// bits selected in each of the four GPIO banks.
-		// Since the SBBO takes 50ns or so, it is important
-		// to skip
-//		QBEQ skip_gpio0, gpio0_mask, 0
-		AND set_out, pru0r30_data, pru0r30_mask
-//		SBBO set_out, gpio0_base, GPIO_DATAOUT, 4
-		MOV r30, set_out
+//delay_loop:
+	//SUB delay_iter, delay_iter, 1
+	//QBNE delay_loop, delay_iter, 0
 
-delay_loop:
-		SUB delay_iter, delay_iter, 1
-		QBNE delay_loop, delay_iter, 0
 delay_done:
-
-		// advance to the next output
-		ADD data_addr, data_addr, 4*4
-		SUB count, count, 1
-		QBA OUTPUT_LOOP
+	ADD data_addr, data_addr, 4*8
+	SUB count, count, 8
+	QBA OUTPUT_LOOP
 
 EXIT:
 #ifdef AM33XX
